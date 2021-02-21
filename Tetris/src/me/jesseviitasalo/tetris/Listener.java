@@ -41,7 +41,7 @@ public class Listener implements KeyListener {
 					return;
 			}
 			
-			TetrisBlock.drawAll(Tetris.tetris.getGraphics());
+			Tetris.paint();
 		} else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 			Tetris.play.doClick();
 		}

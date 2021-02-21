@@ -2,16 +2,17 @@ package me.jesseviitasalo.tetris;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class Tetris extends JFrame {
 	public static int score;
@@ -20,7 +21,11 @@ public class Tetris extends JFrame {
 	public static Tetris tetris;
 	
 	public static void main(String[] args) {
-		new Tetris();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new Tetris();
+			}
+		});
 	}
 	
 	/**
@@ -47,24 +52,28 @@ public class Tetris extends JFrame {
 		play.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				score = 0;
+				createGame();
 				play.setVisible(false);
-				paint(getGraphics());
-				drawGame(getGraphics());
 			}
 		});
 		this.add(play);
 		
-		sleep(10);
-		
-		drawGameOver(this.getGraphics());
+		this.add(new Panel());
+	}
+	
+	/**
+	 * Calls repaint
+	 */
+	public static void paint() {		
+		tetris.repaint();
 	}
 	
 	/**
 	 * Draws the game over screen.
 	 */
-	public void drawGameOver(Graphics g) {
+	public static void drawGameOver(Graphics2D g) {
 		g.setColor(new Color(69, 69, 69, 220));
-		g.fillRect(0, 0, this.getWidth(), this.getHeight());
+		g.fillRect(0, 0, tetris.getWidth(), tetris.getHeight());
 		
 		drawCenterString(g, "-:255, 0, 0:-Game over", 100, 50);
 	    drawCenterString(g, "-:33, 148, 166:-Score: -:21, 237, 75:-" + score, 150, 50);
@@ -81,9 +90,9 @@ public class Tetris extends JFrame {
 	}
 	
 	/**
-	 * Draws and creates the game.
+	 * Creates the game
 	 */
-	public void drawGame(Graphics g) {
+	public void createGame() {
 		Thread thread = new Thread() {
 			public void run() {
 				while(true) {
@@ -92,12 +101,12 @@ public class Tetris extends JFrame {
 							Tetris.playSound("Fall.wav");
 							current.removeLayers();
 						}
-						current = new TetrisBlock(217, -20, null);
+						current = new TetrisBlock(210, -20, null);
 						if (!current.canMoveDown()) {
 							Tetris.playSound("GameOver.wav");
 							current = null;
 							TetrisBlock.blocks.clear();
-							drawGameOver(g);
+							paint();
 							break;
 						}
 						score++;
@@ -105,11 +114,11 @@ public class Tetris extends JFrame {
 					
 					if (current.canMoveDown()) {
 						current.moveDown();
-						TetrisBlock.drawAll(g);
+						paint();
 					}
 					
-					//Sleep x time before updating the block.
-					Tetris.sleep(250);
+					//Sleep some time before updating the block. The speed goes faster if you have higher score
+					Tetris.sleep(250 - (score / 5));
 				}
 			}
 		};
@@ -133,15 +142,16 @@ public class Tetris extends JFrame {
 	 * Draws an x centered string to the screen using the passed graphics.
 	 * You can pass an rgb color with the string like this -:0, 255, 0:- and it will use the color with the upcoming text until u pass another color.
 	 */
-	public static void drawCenterString(Graphics g, String text, int y, int size) {
+	public static void drawCenterString(Graphics2D g, String text, int y, int size) {
 		String startRegex = "-:";
 		
 		int widthPlus = 0;
 		int textWidth = 0;
 		String[] texts = {text};
 		
-		//Set font
+		//Set font and enable anti aliasing
 		g.setFont(new Font("Arial", Font.BOLD, size));
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		
 		//Split the text into list for each given color
 		if (text.contains(startRegex)) {

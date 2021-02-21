@@ -1,7 +1,7 @@
 package me.jesseviitasalo.tetris;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -46,7 +46,7 @@ public class TetrisBlock {
 		}
 		
 		for (TetrisBlock tb : connectedBlocks) {
-			if (tb.getY() > 550) {
+			if (tb.getY() > 520) {
 				return false;
 			}
 		}
@@ -115,41 +115,33 @@ public class TetrisBlock {
 	/**
 	 * Draws all the blocks and the score counter.
 	 */
-	public static void drawAll(Graphics g) {
-		Thread thread = new Thread() {
-			public void run() {
-				Tetris.tetris.paint(g);
-				
-				//Draw the current bottom position with white thing
-				for (TetrisBlock block : Tetris.current.getDownPosition().getConnectedBlocks()) {
-					g.setColor(Color.WHITE);
-					g.fillRect(block.getX(), block.getY(), size, size);
-					
-					g.setColor(new Color(69, 69, 69));
-					g.fillRect(block.getX() + 2, block.getY() + 2, size - 4, size - 4);
-				}
-				
-				Tetris.sleep(1);
-				
-				//Draw all blocks
-				try {
-					for (TetrisBlock block : TetrisBlock.blocks) {
-						g.setColor(Color.BLACK);
-						g.fillRect(block.getX(), block.getY(), size, size);
-						
-						g.setColor(block.getColor());
-						g.fillRect(block.getX() + 2, block.getY() + 2, size - 4, size - 4);
-					}
-				} catch (ConcurrentModificationException ignored) {
-					
-				}
-				
-				//Draw score
-				Tetris.drawCenterString(g, "-:33, 148, 166:-Score: -:21, 237, 75:-" + Tetris.score, 50, 20);
-			}
-		};
+	public static void drawAll(Graphics2D g) {
+		//Draw the current bottom position with white thing
+		for (TetrisBlock block : Tetris.current.getDownPosition().getConnectedBlocks()) {
+			g.setColor(Color.WHITE);
+			g.fillRect(block.getX(), block.getY(), size, size);
+			
+			g.setColor(new Color(69, 69, 69));
+			g.fillRect(block.getX() + 2, block.getY() + 2, size - 4, size - 4);
+		}
 		
-		thread.start();
+		Tetris.sleep(1);
+		
+		//Draw all blocks
+		try {
+			for (TetrisBlock block : TetrisBlock.blocks) {
+				g.setColor(Color.BLACK);
+				g.fillRect(block.getX(), block.getY(), size, size);
+				
+				g.setColor(block.getColor());
+				g.fillRect(block.getX() + 2, block.getY() + 2, size - 4, size - 4);
+			}
+		} catch (ConcurrentModificationException ignored) {
+			
+		}
+		
+		//Draw score
+		Tetris.drawCenterString(g, "-:33, 148, 166:-Score: -:21, 237, 75:-" + Tetris.score, 50, 20);
 	}
 	
 	public boolean isConnectedBlock(TetrisBlock block) {
